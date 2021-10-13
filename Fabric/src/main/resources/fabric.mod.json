@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "viewdistanceworkaround",
+  "name": "View Distance Workaround",
+  "description": "Delays sending chunks on login and adds /view-distance command",
+  "version": "${version}",
+  "license": "Unlicense",
+  
+  "authors": [
+    "chylex"
+  ],
+  
+  "contact": {
+    "issues": "https://github.com/chylex/Minecraft-View-Distance-Workaround/issues"
+  },
+  
+  "environment": "server",
+  "entrypoints": {
+    "server": [
+      "chylex.viewdistance.ViewDistanceFabricMod"
+    ]
+  },
+  "mixins": [
+    "viewdistanceworkaround.mixins.json"
+  ]
+}
