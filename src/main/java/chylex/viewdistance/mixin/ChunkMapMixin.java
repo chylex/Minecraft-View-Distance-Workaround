@@ -38,11 +38,12 @@ public class ChunkMapMixin {
 			}
 			
 			active = true;
+			int delay = ViewDistanceWorkaround.get().getConfig(false).loginDelaySeconds();
 			
 			new Thread(() -> {
 				try {
 					
-					Thread.sleep(2_000L);
+					Thread.sleep(delay * 1000L);
 					dedi.execute(() -> {
 						if (players.contains(serverPlayer.getUUID())) {
 							updatePlayerStatus(serverPlayer, isAdding);
@@ -60,6 +61,6 @@ public class ChunkMapMixin {
 	
 	@Redirect(method = "updatePlayerStatus", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ChunkMap;viewDistance:I"))
 	private int getViewDistance(final ChunkMap instance) {
-		return active ? 2 : viewDistance;
+		return active ? ViewDistanceWorkaround.get().getConfig(false).loginViewDistance() : viewDistance;
 	}
 }
