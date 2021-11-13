@@ -1,5 +1,6 @@
 package chylex.viewdistance.mixin;
 import chylex.viewdistance.ViewDistanceWorkaround;
+import chylex.viewdistance.track.ChunkTrackerThread;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,28 +10,31 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Mixin(ChunkMap.class)
 public class ChunkMapMixin {
-	private final Set<UUID> players = new HashSet<>();
+	private final Map<UUID, ChunkTrackerThread> playerThreads = new HashMap<>();
 	private boolean active = false;
 	
 	@Shadow
 	int viewDistance;
 	
-	@Shadow
-	void updatePlayerStatus(final ServerPlayer serverPlayer, final boolean isRemoving) {}
-	
 	@Inject(method = "updatePlayerStatus", at = @At("HEAD"))
 	private void hookUpdatePlayerStatus(final ServerPlayer serverPlayer, final boolean isAdding, final CallbackInfo ci) {
+		final UUID uuid = serverPlayer.getUUID();
+		
 		if (!isAdding) {
-			players.remove(serverPlayer.getUUID());
+			var thread = playerThreads.remove(uuid);
+			if (thread != null) {
+				thread.interrupt();
+			}
+			
 			active = false;
 		}
-		else if (players.add(serverPlayer.getUUID())) {
+		else if (!playerThreads.containsKey(uuid)) {
 			final DedicatedServer dedi = ViewDistanceWorkaround.get().getDedicatedServer();
 			if (dedi == null) {
 				active = false;
@@ -39,27 +43,24 @@ public class ChunkMapMixin {
 			
 			active = true;
 			
-			new Thread(() -> {
-				try {
-					
-					Thread.sleep(2_000L);
-					dedi.execute(() -> {
-						if (players.contains(serverPlayer.getUUID())) {
-							updatePlayerStatus(serverPlayer, isAdding);
-						}
-					});
-					
-				} catch (final InterruptedException ignored) {
-				}
-			}).start();
+			@SuppressWarnings("ConstantConditions")
+			final ChunkMap chunkMap = (ChunkMap)(Object)this;
+			final ChunkTrackerThread thread = new ChunkTrackerThread(dedi, chunkMap, serverPlayer, viewDistance);
+			playerThreads.put(uuid, thread);
+			thread.start();
 		}
 		else {
 			active = false;
 		}
 	}
 	
+	@Inject(method = "updatePlayerStatus", at = @At("RETURN"))
+	private void hookUpdatePlayerStatusEnd(final ServerPlayer serverPlayer, final boolean isAdding, final CallbackInfo ci) {
+		active = false;
+	}
+	
 	@Redirect(method = "updatePlayerStatus", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ChunkMap;viewDistance:I"))
 	private int getViewDistance(final ChunkMap instance) {
-		return active ? 2 : viewDistance;
+		return active ? 1 : viewDistance;
 	}
 }
