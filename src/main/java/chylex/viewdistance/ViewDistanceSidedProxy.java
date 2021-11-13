@@ -4,5 +4,4 @@ import net.minecraft.server.dedicated.DedicatedServer;
 
 public interface ViewDistanceSidedProxy {
 	DedicatedServer getDedicatedServer();
-	ViewDistanceConfig getConfig(boolean reload);
 }

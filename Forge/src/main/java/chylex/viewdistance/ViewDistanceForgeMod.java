@@ -6,7 +6,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.IExtensionPoint.DisplayTest;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig.Type;
 import net.minecraftforge.fmllegacy.network.FMLNetworkConstants;
 import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
 
@@ -14,7 +13,6 @@ import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
 public final class ViewDistanceForgeMod {
 	public ViewDistanceForgeMod() {
 		MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
-		ModLoadingContext.get().registerConfig(Type.COMMON, ViewDistanceForgeConfig.SPEC);
 		ModLoadingContext.get().registerExtensionPoint(DisplayTest.class, () -> new DisplayTest(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
 	}
 	
