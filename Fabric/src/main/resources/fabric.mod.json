@@ -15,11 +15,6 @@
   },
   
   "environment": "server",
-  "entrypoints": {
-    "server": [
-      "chylex.viewdistance.ViewDistanceFabricMod"
-    ]
-  },
   "mixins": [
     "viewdistanceworkaround.mixins.json"
   ]

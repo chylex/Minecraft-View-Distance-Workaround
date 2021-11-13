@@ -1,11 +1,11 @@
 package chylex.viewdistance.command;
 
-import chylex.viewdistance.ViewDistanceWorkaround;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static net.minecraft.commands.Commands.argument;
@@ -25,8 +25,8 @@ public final class SetViewDistanceCommand {
 	}
 	
 	private static int setViewDistance(final CommandSourceStack s, int chunks) {
-		final DedicatedServer dedi = ViewDistanceWorkaround.get().getDedicatedServer();
-		if (dedi == null) {
+		final MinecraftServer server = s.getServer();
+		if (!(server instanceof DedicatedServer dedi)) {
 			s.sendFailure(new TextComponent("Internal mod error, server instance not found!"));
 			return 0;
 		}

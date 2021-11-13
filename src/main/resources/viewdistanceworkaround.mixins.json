@@ -5,7 +5,6 @@
   "refmap": "viewdistanceworkaround.refmap.json",
   "compatibilityLevel": "JAVA_16",
   "server": [
-    "ChunkMapMixin",
     "CommandMixin"
   ],
   "injectors": {
